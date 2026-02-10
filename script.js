@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function telaTurma() {
     app.innerHTML = `
       <section class="card">
-        <button id="btnVoltar" class="btnVoltar">← Voltar</button>
+        <button id="btnVoltar" class="btnVoltar">← </button>
         <h2>${turmaSelecionada.nome}</h2>
 
         <div class="form">
@@ -115,23 +115,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function adicionarAluno() {
-    const nome = document.getElementById("nomeAluno").value.trim();
-    if (!nome) return;
+  const nome = document.getElementById("nomeAluno").value.trim();
+  if (!nome) return;
 
-    const aluno = {
-      id: Date.now(),
-      nome,
-      turmaId: turmaSelecionada.id
-    };
+  alert("Aluno: " + nome + " - turmaId: " + turmaSelecionada.id);
 
-    const tx = db.transaction("estudantes", "readwrite");
-    const store = tx.objectStore("estudantes");
-    store.add(aluno);
+  const aluno = {
+    id: Date.now(),
+    nome,
+    turmaId: turmaSelecionada.id
+  };
 
-    tx.oncomplete = () => {
-      telaTurma();
-    };
-  }
+  const tx = db.transaction("estudantes", "readwrite");
+  const store = tx.objectStore("estudantes");
+  store.add(aluno);
+
+  tx.oncomplete = () => {
+    telaTurma();
+  };
+}
 
   function carregarAlunos() {
     const tx = db.transaction("estudantes", "readonly");
