@@ -1,9 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   let db;
+  let turmaSelecionada = null;
 
-  const btnNovaTurma = document.getElementById("btnNovaTurma");
-  const listaTurmas = document.getElementById("listaTurmas");
-  const inputNomeTurma = document.getElementById("nomeTurma");
+  const app = document.getElementById("app");
 
   const request = indexedDB.open("appDUA", 1);
 
@@ -12,38 +11,49 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!db.objectStoreNames.contains("turmas")) {
       db.createObjectStore("turmas", { keyPath: "id" });
     }
+    if (!db.objectStoreNames.contains("estudantes")) {
+      db.createObjectStore("estudantes", { keyPath: "id" });
+    }
   };
 
   request.onsuccess = (event) => {
     db = event.target.result;
-    carregarTurmas();
+    telaInicial();
   };
 
   request.onerror = () => {
     alert("Erro ao abrir o banco de dados");
   };
 
-  btnNovaTurma.addEventListener("click", () => {
-    const nome = inputNomeTurma.value.trim();
-    if (!nome) {
-      alert("Digite o nome da turma");
-      return;
-    }
+  function telaInicial() {
+    app.innerHTML = `
+      <section class="card">
+        <h2>Minhas Turmas</h2>
+        <div class="form">
+          <input type="text" id="nomeTurma" placeholder="Nome da turma">
+          <button id="btnNovaTurma">Criar Turma</button>
+        </div>
+        <ul id="listaTurmas"></ul>
+      </section>
+    `;
 
-    const turma = {
-      id: Date.now(),
-      nome: nome
-    };
+    document.getElementById("btnNovaTurma").addEventListener("click", criarTurma);
+    carregarTurmas();
+  }
 
+  function criarTurma() {
+    const nome = document.getElementById("nomeTurma").value.trim();
+    if (!nome) return;
+
+    const turma = { id: Date.now(), nome };
     const tx = db.transaction("turmas", "readwrite");
     const store = tx.objectStore("turmas");
     store.add(turma);
 
     tx.oncomplete = () => {
-      inputNomeTurma.value = "";
-      carregarTurmas();
+      telaInicial();
     };
-  });
+  }
 
   function carregarTurmas() {
     const tx = db.transaction("turmas", "readonly");
@@ -56,26 +66,92 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderizarTurmas(turmas) {
-  listaTurmas.innerHTML = "";
+    const listaTurmas = document.getElementById("listaTurmas");
+    listaTurmas.innerHTML = "";
 
-  turmas.forEach(turma => {
-    const li = document.createElement("li");
+    turmas.forEach(turma => {
+      const li = document.createElement("li");
 
-    const nome = document.createElement("span");
-    nome.textContent = turma.nome;
+      const nome = document.createElement("span");
+      nome.textContent = turma.nome;
 
-    const btnEntrar = document.createElement("button");
-    btnEntrar.textContent = "Entrar";
-    btnEntrar.classList.add("btnEntrar");
+      const btnEntrar = document.createElement("button");
+      btnEntrar.textContent = "Entrar";
+      btnEntrar.classList.add("btnEntrar");
 
-    btnEntrar.addEventListener("click", () => {
-      alert("Em breve você vai entrar na turma: " + turma.nome);
+      btnEntrar.addEventListener("click", () => {
+        turmaSelecionada = turma;
+        telaTurma();
+      });
+
+      li.appendChild(nome);
+      li.appendChild(btnEntrar);
+      listaTurmas.appendChild(li);
+    });
+  }
+
+  function telaTurma() {
+    app.innerHTML = `
+      <section class="card">
+        <button id="btnVoltar" class="btnVoltar">← Voltar</button>
+        <h2>${turmaSelecionada.nome}</h2>
+
+        <div class="form">
+          <input type="text" id="nomeAluno" placeholder="Nome do estudante">
+          <button id="btnNovoAluno">Adicionar estudante</button>
+        </div>
+
+        <ul id="listaAlunos"></ul>
+      </section>
+    `;
+
+    document.getElementById("btnVoltar").addEventListener("click", () => {
+      turmaSelecionada = null;
+      telaInicial();
     });
 
-    li.appendChild(nome);
-    li.appendChild(btnEntrar);
+    document.getElementById("btnNovoAluno").addEventListener("click", adicionarAluno);
+    carregarAlunos();
+  }
 
-    listaTurmas.appendChild(li);
-  });
-}
+  function adicionarAluno() {
+    const nome = document.getElementById("nomeAluno").value.trim();
+    if (!nome) return;
+
+    const aluno = {
+      id: Date.now(),
+      nome,
+      turmaId: turmaSelecionada.id
+    };
+
+    const tx = db.transaction("estudantes", "readwrite");
+    const store = tx.objectStore("estudantes");
+    store.add(aluno);
+
+    tx.oncomplete = () => {
+      telaTurma();
+    };
+  }
+
+  function carregarAlunos() {
+    const tx = db.transaction("estudantes", "readonly");
+    const store = tx.objectStore("estudantes");
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const alunos = req.result.filter(a => a.turmaId === turmaSelecionada.id);
+      renderizarAlunos(alunos);
+    };
+  }
+
+  function renderizarAlunos(alunos) {
+    const listaAlunos = document.getElementById("listaAlunos");
+    listaAlunos.innerHTML = "";
+
+    alunos.forEach(aluno => {
+      const li = document.createElement("li");
+      li.textContent = aluno.nome;
+      listaAlunos.appendChild(li);
+    });
+  }
 });
