@@ -74,3 +74,12 @@ li {
   border-radius: 8px;
   margin-bottom: 8px;
 }
+
+.btnEntrar {
+  background: #10b981;
+  margin-left: 10px;
+}
+
+.btnEntrar:hover {
+  background: #059669;
+}
