@@ -135,25 +135,39 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 }
 
-  function carregarAlunos() {
-    const tx = db.transaction("estudantes", "readonly");
-    const store = tx.objectStore("estudantes");
-    const req = store.getAll();
+ function carregarAlunos() {
+  if (!turmaSelecionada) return;
 
-    req.onsuccess = () => {
-      const alunos = req.result.filter(a => a.turmaId === turmaSelecionada.id);
-      renderizarAlunos(alunos);
-    };
-  }
+  const tx = db.transaction("estudantes", "readonly");
+  const store = tx.objectStore("estudantes");
+  const req = store.getAll();
+
+  req.onsuccess = () => {
+    const todos = req.result || [];
+    const alunosDaTurma = todos.filter(a => a.turmaId === turmaSelecionada.id);
+    renderizarAlunos(alunosDaTurma);
+  };
+
+  req.onerror = () => {
+    alert("Erro ao carregar estudantes");
+  };
+}
 
   function renderizarAlunos(alunos) {
-    const listaAlunos = document.getElementById("listaAlunos");
-    listaAlunos.innerHTML = "";
+  const listaAlunos = document.getElementById("listaAlunos");
+  listaAlunos.innerHTML = "";
 
-    alunos.forEach(aluno => {
-      const li = document.createElement("li");
-      li.textContent = aluno.nome;
-      listaAlunos.appendChild(li);
-    });
+  if (!alunos || alunos.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "Nenhum estudante cadastrado ainda.";
+    li.style.fontStyle = "italic";
+    listaAlunos.appendChild(li);
+    return;
   }
-});
+
+  alunos.forEach(aluno => {
+    const li = document.createElement("li");
+    li.textContent = aluno.nome;
+    listaAlunos.appendChild(li);
+  });
+}
