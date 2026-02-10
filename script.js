@@ -8,9 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   request.onupgradeneeded = (event) => {
     db = event.target.result;
+
     if (!db.objectStoreNames.contains("turmas")) {
       db.createObjectStore("turmas", { keyPath: "id" });
     }
+
     if (!db.objectStoreNames.contains("estudantes")) {
       db.createObjectStore("estudantes", { keyPath: "id" });
     }
@@ -25,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Erro ao abrir o banco de dados");
   };
 
+  // ===== TELA INICIAL =====
   function telaInicial() {
     app.innerHTML = `
       <section class="card">
@@ -46,6 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!nome) return;
 
     const turma = { id: Date.now(), nome };
+
     const tx = db.transaction("turmas", "readwrite");
     const store = tx.objectStore("turmas");
     store.add(turma);
@@ -69,6 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const listaTurmas = document.getElementById("listaTurmas");
     listaTurmas.innerHTML = "";
 
+    if (!turmas || turmas.length === 0) {
+      listaTurmas.innerHTML = "<li style='font-style: italic;'>Nenhuma turma cadastrada.</li>";
+      return;
+    }
+
     turmas.forEach(turma => {
       const li = document.createElement("li");
 
@@ -90,10 +99,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ===== TELA DA TURMA =====
   function telaTurma() {
     app.innerHTML = `
       <section class="card">
-        <button id="btnVoltar" class="btnVoltar">← </button>
+        <button id="btnVoltar" class="btnVoltar">← Voltar</button>
         <h2>${turmaSelecionada.nome}</h2>
 
         <div class="form">
@@ -115,59 +125,49 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function adicionarAluno() {
-  const nome = document.getElementById("nomeAluno").value.trim();
-  if (!nome) return;
+    const nome = document.getElementById("nomeAluno").value.trim();
+    if (!nome) return;
 
-  alert("Aluno: " + nome + " - turmaId: " + turmaSelecionada.id);
+    const aluno = {
+      id: Date.now(),
+      nome,
+      turmaId: turmaSelecionada.id
+    };
 
-  const aluno = {
-    id: Date.now(),
-    nome,
-    turmaId: turmaSelecionada.id
-  };
+    const tx = db.transaction("estudantes", "readwrite");
+    const store = tx.objectStore("estudantes");
+    store.add(aluno);
 
-  const tx = db.transaction("estudantes", "readwrite");
-  const store = tx.objectStore("estudantes");
-  store.add(aluno);
-
-  tx.oncomplete = () => {
-    telaTurma();
-  };
-}
-
- function carregarAlunos() {
-  if (!turmaSelecionada) return;
-
-  const tx = db.transaction("estudantes", "readonly");
-  const store = tx.objectStore("estudantes");
-  const req = store.getAll();
-
-  req.onsuccess = () => {
-    const todos = req.result || [];
-    const alunosDaTurma = todos.filter(a => a.turmaId === turmaSelecionada.id);
-    renderizarAlunos(alunosDaTurma);
-  };
-
-  req.onerror = () => {
-    alert("Erro ao carregar estudantes");
-  };
-}
-
-  function renderizarAlunos(alunos) {
-  const listaAlunos = document.getElementById("listaAlunos");
-  listaAlunos.innerHTML = "";
-
-  if (!alunos || alunos.length === 0) {
-    const li = document.createElement("li");
-    li.textContent = "Nenhum estudante cadastrado ainda.";
-    li.style.fontStyle = "italic";
-    listaAlunos.appendChild(li);
-    return;
+    tx.oncomplete = () => {
+      telaTurma();
+    };
   }
 
-  alunos.forEach(aluno => {
-    const li = document.createElement("li");
-    li.textContent = aluno.nome;
-    listaAlunos.appendChild(li);
-  });
-}
+  function carregarAlunos() {
+    const tx = db.transaction("estudantes", "readonly");
+    const store = tx.objectStore("estudantes");
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const todos = req.result || [];
+      const alunosDaTurma = todos.filter(a => a.turmaId === turmaSelecionada.id);
+      renderizarAlunos(alunosDaTurma);
+    };
+  }
+
+  function renderizarAlunos(alunos) {
+    const listaAlunos = document.getElementById("listaAlunos");
+    listaAlunos.innerHTML = "";
+
+    if (!alunos || alunos.length === 0) {
+      listaAlunos.innerHTML = "<li style='font-style: italic;'>Nenhum estudante cadastrado ainda.</li>";
+      return;
+    }
+
+    alunos.forEach(aluno => {
+      const li = document.createElement("li");
+      li.textContent = aluno.nome;
+      listaAlunos.appendChild(li);
+    });
+  }
+});
