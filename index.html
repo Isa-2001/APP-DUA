@@ -7,11 +7,21 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>App DUA</h1>
-  <div id="app">
-  <button id="btnNovaTurma">➕ Nova Turma</button>
-  <ul id="listaTurmas"></ul>
-</div>
-  <script src="script.js"></script>
+ <header>
+  App DUA – Diagnóstico da Turma
+</header>
+
+<main id="app">
+  <section class="card">
+    <h2>Minhas Turmas</h2>
+
+    <div class="form">
+      <input type="text" id="nomeTurma" placeholder="Nome da turma">
+      <button id="btnNovaTurma">Criar Turma</button>
+    </div>
+
+    <ul id="listaTurmas"></ul>
+  </section>
+</main>
 </body>
 </html>
