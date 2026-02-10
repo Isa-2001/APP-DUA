@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const app = document.getElementById("app");
 
-  const request = indexedDB.open("appDUA", 1);
+  const request = indexedDB.open("appDUA", 2);
 
   request.onupgradeneeded = (event) => {
     db = event.target.result;
