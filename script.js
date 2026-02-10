@@ -56,11 +56,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderizarTurmas(turmas) {
-    listaTurmas.innerHTML = "";
-    turmas.forEach(turma => {
-      const li = document.createElement("li");
-      li.textContent = turma.nome;
-      listaTurmas.appendChild(li);
+  listaTurmas.innerHTML = "";
+
+  turmas.forEach(turma => {
+    const li = document.createElement("li");
+
+    const nome = document.createElement("span");
+    nome.textContent = turma.nome;
+
+    const btnEntrar = document.createElement("button");
+    btnEntrar.textContent = "Entrar";
+    btnEntrar.classList.add("btnEntrar");
+
+    btnEntrar.addEventListener("click", () => {
+      alert("Em breve você vai entrar na turma: " + turma.nome);
     });
-  }
+
+    li.appendChild(nome);
+    li.appendChild(btnEntrar);
+
+    listaTurmas.appendChild(li);
+  });
+}
 });
