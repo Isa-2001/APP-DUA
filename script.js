@@ -22,9 +22,13 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Erro ao abrir o banco de dados");
   };
 
-  btnNovaTurma.addEventListener("click", () => {
-    const nome = prompt("Nome da turma:");
-    if (!nome) return;
+  const inputNomeTurma = document.getElementById("nomeTurma");
+
+btnNovaTurma.addEventListener("click", () => {
+  const nome = inputNomeTurma.value.trim();
+  if (!nome) return;
+
+  inputNomeTurma.value = "";
 
     const turma = {
       id: Date.now(),
