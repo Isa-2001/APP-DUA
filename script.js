@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const btnNovaTurma = document.getElementById("btnNovaTurma");
   const listaTurmas = document.getElementById("listaTurmas");
+  const inputNomeTurma = document.getElementById("nomeTurma");
 
   const request = indexedDB.open("appDUA", 1);
 
@@ -22,13 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Erro ao abrir o banco de dados");
   };
 
-  const inputNomeTurma = document.getElementById("nomeTurma");
-
-btnNovaTurma.addEventListener("click", () => {
-  const nome = inputNomeTurma.value.trim();
-  if (!nome) return;
-
-  inputNomeTurma.value = "";
+  btnNovaTurma.addEventListener("click", () => {
+    const nome = inputNomeTurma.value.trim();
+    if (!nome) {
+      alert("Digite o nome da turma");
+      return;
+    }
 
     const turma = {
       id: Date.now(),
@@ -40,6 +40,7 @@ btnNovaTurma.addEventListener("click", () => {
     store.add(turma);
 
     tx.oncomplete = () => {
+      inputNomeTurma.value = "";
       carregarTurmas();
     };
   });
@@ -47,10 +48,10 @@ btnNovaTurma.addEventListener("click", () => {
   function carregarTurmas() {
     const tx = db.transaction("turmas", "readonly");
     const store = tx.objectStore("turmas");
-    const request = store.getAll();
+    const req = store.getAll();
 
-    request.onsuccess = () => {
-      renderizarTurmas(request.result);
+    req.onsuccess = () => {
+      renderizarTurmas(req.result);
     };
   }
 
